@@ -138,7 +138,7 @@ function Chatbot() {
                     avatar={<Avatar icon={AvatarSrc} />}
                     title={message.who}
                     description={
-                      <video controls width="500" autoplay="true" loop="true">
+                      <video controls width="500" autoPlay={true} loop={true}>
                         <source src={message.content.payload.fields.video_url.stringValue}
                           type="video/mp4" />
                       </video>
