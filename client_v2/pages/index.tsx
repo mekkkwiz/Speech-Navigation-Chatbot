@@ -12,10 +12,10 @@ export default function Home() {
   return (
     <main>
       <div>
-        <div style = {{display: 'flex', justifyContent: 'center', marginTop: '2rem'}}>
-          <Title level={1}>CHAT BOT APP <RobotOutlined style={{display: 'inline-block',verticalAlign: 'middle',}}/></Title>
+        <div className="flex justify-center mt-8">
+          <Title level={1}>CHAT BOT APP <RobotOutlined className="inline-block align-middle"/></Title>
         </div>
-        <div style= {{ display: 'flex', justifyContent: 'center'}}>
+        <div className="flex justify-center">
           <Chatbot />
         </div>
       </div>

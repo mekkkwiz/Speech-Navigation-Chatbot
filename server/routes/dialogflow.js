@@ -1,6 +1,6 @@
 const express = require('express');
 const structjson = require('./structjson.js');
-const dialogflow = require('@google-cloud/dialogflow');
+const dialogflow = require('@google-cloud/dialogflow').v2;
 
 
 const router = express.Router();
@@ -29,7 +29,7 @@ const sessionPath = sessionClient.projectAgentSessionPath( // for US regions dat
 // Text Query Route
 
 router.post('/textQuery', async (req, res) => {
-    //We need to send some information that comes from the client to Dialogflow API
+    // We need to send some information that comes from the client to Dialogflow API
     // The text query request.
     const request = {
         session: sessionPath,
@@ -41,12 +41,16 @@ router.post('/textQuery', async (req, res) => {
                 languageCode: languageCode,
             },
         },
+        outputAudioConfig: {
+            audioEncoding: 'OUTPUT_AUDIO_ENCODING_LINEAR_16',
+        },
     };
 
     // Send request and log result
     const responses = await sessionClient.detectIntent(request);
     console.log('Detected intent');
     const result = responses[0].queryResult;
+    const audio = responses[0].outputAudio;
     console.log(`  Query: ${result.queryText}`);
     console.log(`  Response: ${result.fulfillmentText}`);
     if (result.intent) {
@@ -55,7 +59,14 @@ router.post('/textQuery', async (req, res) => {
         console.log('  No intent matched.');
     }
 
-    res.send(result)
+    // Convert the binary audio data to base64 encoding
+    const audioBase64 = Buffer.from(audio, 'binary').toString('base64');
+
+    // Send both text and audio response in the JSON object
+    res.send({
+        textResponse: result,
+        audioResponse: audioBase64
+    });
 })
 
 
@@ -75,12 +86,16 @@ router.post('/eventQuery', async (req, res) => {
                 languageCode: languageCode,
             },
         },
+        outputAudioConfig: {
+            audioEncoding: 'OUTPUT_AUDIO_ENCODING_LINEAR_16',
+        },
     };
 
     // Send request and log result
     const responses = await sessionClient.detectIntent(request);
     console.log('Detected intent');
     const result = responses[0].queryResult;
+    const audio = responses[0].outputAudio;
     console.log(`  Query: ${result.queryText}`);
     console.log(`  Response: ${result.fulfillmentText}`);
     if (result.intent) {
@@ -89,7 +104,14 @@ router.post('/eventQuery', async (req, res) => {
         console.log('  No intent matched.');
     }
 
-    res.send(result)
+    // Convert the binary audio data to base64 encoding
+    const audioBase64 = Buffer.from(audio, 'binary').toString('base64');
+
+    // Send both text and audio response in the JSON object
+    res.send({
+        textResponse: result,
+        audioResponse: audioBase64
+    });
 })
 
 module.exports = router;

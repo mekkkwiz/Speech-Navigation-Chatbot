@@ -47,7 +47,11 @@ function Chatbot() {
     try {
       //* I will send request to the textQuery ROUTE
       const response = await Axios.post('http://localhost:5000/api/dialogflow/textQuery', textQueryVariables)
-      for (let content of response.data.fulfillmentMessages) {
+      console.log("textQuery response", response)
+
+      const audioRes = response.data.audioResponse;
+
+      for (let content of response.data.textResponse.fulfillmentMessages) {
         //* create a new message object from bot response
         let conversation = {
           who: 'bot',
@@ -55,7 +59,17 @@ function Chatbot() {
         }
         //* store new message object from bot response to redux store by using saveMessage acction
         dispatch(saveMessage(conversation))
+        // Check if the message from the bot includes an audio response
+        if (audioRes) {
+          // Create an Audio element and set its source to the base64-encoded audio data
+          let audio = new Audio('data:audio/wav;base64,' + audioRes);
+
+          // Play the audio
+          audio.play();
+        }
       }
+
+
 
     } catch (error) {
       conversation = {
@@ -78,7 +92,7 @@ function Chatbot() {
     try {
       //* I will send request to the textQuery ROUTE
       const response = await Axios.post('http://localhost:5000/api/dialogflow/eventQuery', eventQueryVariables)
-      for (let content of response.data.fulfillmentMessages) {
+      for (let content of response.data.textResponse.fulfillmentMessages) {
         //* create a new message object from bot response
         let conversation = {
           who: 'bot',
@@ -129,8 +143,8 @@ function Chatbot() {
             }
             else if (message.content && message.content.payload.fields.video_url) {
               const AvatarSrc = (message.who === 'bot') ?
-                <RobotOutlined style={{ display: 'inline-block', verticalAlign: 'middle', fontSize: '20px', color: 'black' }} />
-                : <SmileOutlined style={{ display: 'inline-block', verticalAlign: 'middle', fontSize: '20px', color: 'black' }} />
+                <RobotOutlined className="inline-block align-middle text-black text-xl" />
+                : <SmileOutlined className="inline-block align-middle text-black text-xl" />
               //! console.log(message.content.payload.fields.video_url)
               return (
                 <List.Item style={{ padding: '1rem' }}>
@@ -158,20 +172,14 @@ function Chatbot() {
 
 
   return (
-    <div style={{
-      height: 700, width: 700,
-      border: '3px solid black', borderRadius: '7px'
-    }}>
-      <div style={{ height: 644, width: '100%', overflow: 'auto' }}>
+    <div className="h-[770px] w-[770px] border-[3px] rounded-[7px] border-black">
+      <div className="h-[714px] w-full overflow-auto">
         {renderMessages(messageFormRedux)}
       </div>
 
 
       <input
-        style={{
-          margin: 0, width: '100%', height: 50,
-          borderRadius: '4px', padding: '5px', fontSize: '1rem'
-        }}
+        className="m-0 w-full h-[50px] rounded-[4px] p-[5px] text-base"
         placeholder="Send a message..."
         onKeyPress={keyPressHandler}
         type="text"
