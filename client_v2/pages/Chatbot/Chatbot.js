@@ -1,12 +1,10 @@
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import Axios from 'axios';
 import { useDispatch, useSelector } from "react-redux";
 import { saveMessage } from '../../redux/_actions/message_actions'
-import RenderOneMessage from './Sections/RenderOneMessage.js';
+import RenderOneMessage from './Sections/RenderOneMessage';
 import { List, Avatar } from 'antd';
 import { RobotOutlined, SmileOutlined } from '@ant-design/icons'
-// import videoPlayer from './Sections/VideoPlayer.js';
-import ReactPlayer from 'react-player';
 
 function Chatbot() {
   const dispatch = useDispatch()
@@ -18,10 +16,6 @@ function Chatbot() {
   // useEffect(() => {
   //   eventQuery('WelcomeToMyWebsite')
   // }, [])
-
-  // useEffect(() => {
-  //     attemptPlay();
-  // }, []);
 
   //* this function will handle input text messages from users
   //* and send request to server and save response to redux store by dispatch
@@ -81,6 +75,7 @@ function Chatbot() {
         }
       }
 
+      dispatch(saveMessage(conversation))
     }
   }
   //* this function will handle input event from users
@@ -111,6 +106,8 @@ function Chatbot() {
           }
         }
       }
+      //* store new message object from bot response to redux store by using saveMessage acction
+      dispatch(saveMessage(conversation))
 
     }
   }
@@ -153,8 +150,7 @@ function Chatbot() {
                     title={message.who}
                     description={
                       <video controls width="500" autoPlay={true} loop={true}>
-                        <source src={message.content.payload.fields.video_url.stringValue}
-                          type="video/mp4" />
+                        <source src={message.content.payload.fields.video_url.stringValue} type="video/mp4" />
                       </video>
                     }
                   />
@@ -169,7 +165,6 @@ function Chatbot() {
       return null
     }
   }
-
 
   return (
     <div className="h-[770px] w-[770px] border-[3px] rounded-[7px] border-black">
