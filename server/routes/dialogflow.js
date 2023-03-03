@@ -1,5 +1,4 @@
 const express = require('express');
-const structjson = require('./structjson.js');
 const dialogflow = require('@google-cloud/dialogflow').v2;
 
 
