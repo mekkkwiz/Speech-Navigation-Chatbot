@@ -1,0 +1,25 @@
+{
+  "dependencies": {
+    "csv-parser": "^3.0.0",
+    "dialogflow-fulfillment": "^0.6.1",
+    "express": "^4.18.2",
+    "firebase-admin": "^11.5.0",
+    "moment": "^2.29.4",
+    "body-parser": "^1.20.1"
+  },
+  "name": "df_fullfillment_service",
+  "version": "1.0.0",
+  "main": "DFFullfillment.js",
+  "scripts": {
+    "start": "node DFFullfillment.js",
+    "dev": "nodemon DFFullfillment.js"
+  },
+  "keywords": [],
+  "author": "MEK WISARUT",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "concurrently": "^7.6.0",
+    "nodemon": "^2.0.20"
+  }
+}
