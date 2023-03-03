@@ -2,8 +2,12 @@ import React from 'react'
 import { List, Avatar } from 'antd';
 import { RobotOutlined, SmileOutlined } from '@ant-design/icons'
 
+type MyPros = {
+    who: 'bot' | 'user',
+    text: string
+}
 
-export default function RenderOneMessage(props) {
+export default function RenderOneMessage(props: MyPros) {
 
     const AvatarSrc = (props.who ==='bot') ?
     <RobotOutlined style={{display: 'inline-block',verticalAlign: 'middle', fontSize: '20px', color: 'black'}}/>
