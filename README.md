@@ -8,11 +8,16 @@ The program also features additional functionalities such as the ability to inqu
 
 ## Table of Contents
 
-* [Tech Stack](#tech-stack)
-* [Features](#features)
-* [Installation](#installation)
-* [Usage](#usage)
-* [Credits](#credits)
+- [Tech Stack](#tech-stack)
+- [Features](#features)
+- [Installation](#installation)
+  - [Clone the repository](#clone-the-repository)
+  - [Install dependencies](#install-dependencies)
+  - [Create a .env file with the following variables](#create-a-env-file-with-the-following-variables)
+  - [Start the server](#start-the-server)
+  - [Installation Using Docker](#alternatively-you-can-use-docker-to-run-the-program-follow-these-steps-to-install-using-docker)
+- [Usage](#usage)
+- [Credits](#credits)
 
 ## Tech Stack
 
@@ -31,13 +36,13 @@ The program also features additional functionalities such as the ability to inqu
 
 ## Installation
 
-1. Clone the repository
+1. ##### Clone the repository
 
     ```bash
     git clone https://github.com/mekkkwiz/final-project-app
     ```
 
-2. Install dependencies
+2. ##### Install dependencies
 
     ```bash
     cd final-project-app
@@ -47,7 +52,7 @@ The program also features additional functionalities such as the ability to inqu
     npm install
     ```
 
-3. Create a .env file with the following variables:
+3. ##### Create a .env file with the following variables
 
     ```.env
     GOOGLE_TTS_API_KEY=your_api_key
@@ -59,13 +64,13 @@ The program also features additional functionalities such as the ability to inqu
     FIREBASE_APP_ID=your_app_id
     ```
 
-4. Start the server:
+4. ##### Start the server
 
     ```bash
     npm run dev
     ```
 
-Alternatively, you can use Docker to run the program. Follow these steps to install using Docker:
+##### Alternatively, you can use Docker to run the program. Follow these steps to install using Docker
 
 1. Install Docker on your machine.
 2. Clone the repository:
