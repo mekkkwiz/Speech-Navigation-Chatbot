@@ -41,7 +41,7 @@ The program also features additional functionalities such as the ability to inqu
 
 3. Create a .env file with the following variables:
 
-    ```json
+    ```.env
     GOOGLE_TTS_API_KEY=your_api_key
     FIREBASE_API_KEY=your_api_key
     FIREBASE_AUTH_DOMAIN=your_auth_domain
