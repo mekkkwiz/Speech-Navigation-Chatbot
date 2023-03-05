@@ -79,38 +79,38 @@ function Chatbot() {
     }
   }
   //* this function will handle input event from users
-  const eventQuery = async (event) => {
-    //* We need to take care of the message Chatbot sent
-    const eventQueryVariables = {
-      event
-    }
-    try {
-      //* I will send request to the textQuery ROUTE
-      const response = await Axios.post('http://localhost:5000/api/dialogflow/eventQuery', eventQueryVariables)
-      for (let content of response.data.textResponse.fulfillmentMessages) {
-        //* create a new message object from bot response
-        let conversation = {
-          who: 'bot',
-          content: content
-        }
-        //* store new message object from bot response to redux store by using saveMessage acction
-        dispatch(saveMessage(conversation))
-      }
+  // const eventQuery = async (event) => {
+  //   //* We need to take care of the message Chatbot sent
+  //   const eventQueryVariables = {
+  //     event
+  //   }
+  //   try {
+  //     //* I will send request to the textQuery ROUTE
+  //     const response = await Axios.post('http://localhost:5000/api/dialogflow/eventQuery', eventQueryVariables)
+  //     for (let content of response.data.textResponse.fulfillmentMessages) {
+  //       //* create a new message object from bot response
+  //       let conversation = {
+  //         who: 'bot',
+  //         content: content
+  //       }
+  //       //* store new message object from bot response to redux store by using saveMessage acction
+  //       dispatch(saveMessage(conversation))
+  //     }
 
-    } catch (error) {
-      let conversation = {
-        who: 'bot',
-        content: {
-          text: {
-            text: " Error just occurred, please check the problem"
-          }
-        }
-      }
-      //* store new message object from bot response to redux store by using saveMessage acction
-      dispatch(saveMessage(conversation))
+  //   } catch (error) {
+  //     let conversation = {
+  //       who: 'bot',
+  //       content: {
+  //         text: {
+  //           text: " Error just occurred, please check the problem"
+  //         }
+  //       }
+  //     }
+  //     //* store new message object from bot response to redux store by using saveMessage acction
+  //     dispatch(saveMessage(conversation))
 
-    }
-  }
+  //   }
+  // }
 
   //* handle when user press enter to send a message
   const keyPressHandler = (e) => {
