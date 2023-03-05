@@ -6,6 +6,14 @@ This project utilizes cutting-edge technologies such as Natural Language Underst
 
 The program also features additional functionalities such as the ability to inquire about the professor's whereabouts and weather conditions such as pollution levels and temperature in the user's current location. Our goal is to develop a reliable, efficient, and accessible system that can improve the quality of life for people with disabilities and provide valuable information to users.
 
+## Table of Contents
+
+* [Tech Stack](#tech-stack)
+* [Features](#features)
+* [Installation](#installation)
+* [Usage](#usage)
+* [Credits](#credits)
+
 ## Tech Stack
 
 - Frontend: Next.js
