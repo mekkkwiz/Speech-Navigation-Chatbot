@@ -37,24 +37,27 @@ const db = admin.database();
 
 app.post('/', (req, res) => {
     const agent = new WebhookClient({ request: req, response: res });
+    // get sessions
     console.log('Dialogflow Request intent: ' + agent.intent);
 
     function findLocationHandler(agent) {
         const roomName = agent.parameters.locationName;
+        console.log("\t",roomName);
         var ref = db.ref(`rooms/${roomName}`);
         return ref.once("value", function (snapshot) {
-            if (snapshot.val().video_url) {
+            if (snapshot.val()) {
                 const payloadJson = {
                     video_url: snapshot.val().video_url,
                 };
                 let payload = new Payload('DB', payloadJson, { rawPayload: true, sendAsMessage: true });
-                agent.add(`ตามแผนที่ของ${roomName}มาได้เลยค่ะ`);
+                agent.add(`ตามแผนที่ของ ${roomName} มาได้เลยค่ะ`);
                 agent.add(payload);
             } else {
                 agent.add(`เหมือนว่าจะไม่มีห้องนี้อยู่นะ`);
             }
         });
     }
+
 
     function askForWeatherHandler(agent) {
         const location = agent.parameters.location;
@@ -66,23 +69,47 @@ app.post('/', (req, res) => {
                     let path = `${host}/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric&lang=th`;
                     axios.get(path).then(res => {
                         let temp_c = res.data.main.temp;
-                        let condition = res.data.weather[0].description;
+                        // let condition = res.data.weather[0].description;
+                        let conditionCode = res.data.weather[0].id;
 
                         let result = "";
 
                         if (res.data.main.temp && res.data.weather[0].description) {
-                            result = `สภาพอากาศที่${location}มีอุณหภูมิอยู่ที่ ${temp_c} องศาเซลเซียสและมี${condition}`;
+                            if (conditionCode === 800) {
+                                result = `สภาพอากาศใน${location}ตอนนี้ท้องฟ้าแจ่มใสและมีอุณหภูมิอยู่ที่ ${temp_c} องศาเซลเซียสค่ะ`;
+                            } else if (conditionCode >= 200 && conditionCode <= 232) {
+                                result = `ดูเหมือนว่า${location}จะมีฟ้าผ่า ฝนฟ้าคะนอง และมีอุณหภูมิ ${temp_c} องศาเซลเซียสค่ะ`;
+                            } else if (conditionCode >= 300 && conditionCode <= 321) {
+                                result = `ดูเหมือนว่า${location}จะมีฝนตกเบาๆ และมีอุณหภูมิอยู่ที่ ${temp_c} องศาเซลเซียสค่ะ`;
+                            } else if (conditionCode >= 500 && conditionCode <= 531) {
+                                result = `ดูเหมือนว่า${location}จะมีฝนตกหนัก และมีอุณหภูมิอยู่ที่ ${temp_c} องศาเซลเซียสค่ะ`;
+                            } else if (conditionCode >= 600 && conditionCode <= 622) {
+                                result = `ดูเหมือนว่า${location}จะมีหิมะตก และมีอุณหภูมิอยู่ที่ ${temp_c} องศาเซลเซียสค่ะ`;
+                            } else if (conditionCode >= 701 && conditionCode <= 781) {
+                                result = `ดูเหมือนว่า${location}จะมีสภาพอากาศแปรปรวน และมีอุณหภูมิอยู่ที่ ${temp_c} องศาเซลเซียสค่ะ`;
+                            } else if (conditionCode >= 801 && conditionCode <= 804) {
+                                result = `ดูเหมือนว่า${location}จะมีเมฆเป็นส่วนมาก และมีอุณหภูมิอยู่ที่ ${temp_c} องศาเซลเซียสค่ะ`;
+                            } else {
+                                result = `ขออภัยค่ะ ฉันไม่มีข้อมูลเกี่ยวกับสภาพอากาศของ${location}ในขณะนี้`
+                            }
                             agent.add(result);
                         } else {
-                            result = `ดูเหมือนว่าฉันจะหาข้อมูลสภาพอากาศของ${location}ไม่เจอนะ`;
+                            result = `ดูเหมือนว่าฉันไม่สามารถหาข้อมูลสภาพอากาศของ${location}ได้ค่ะ อาจเป็นเพราะข้อมูลไม่เพียงพอ หรือมีข้อผิดพลาดในการเชื่อมต่อ API กรุณาลองใหม่อีกครั้งในภายหลังค่ะ`;
                             agent.add(result);
+                        }
+                        if (temp_c >= 30) {
+                            agent.add("อุณหภูมิร้อนมาก เตรียมร่มเอาไปกันแดดด้วยก็ดีนะคะ");
+                        } else if (temp_c >= 20) {
+                            agent.add("อุณหภูมิเหมาะสมสำหรับกิจกรรมกลางวันมากค่ะ");
+                        } else {
+                            agent.add("ตอนนี้หนาวมาก อย่าลืมใส่เสื้อกันหนาวด้วยนะคะ");
                         }
                         return resolve(result);
                     }).catch(error => { console.error(error); return reject(error); });
 
                 } else {
-                    agent.add(`ดูเหมือนว่าฉันจะหาข้อมูลสภาพอากาศของ${location}ไม่เจอนะ`);
-                    return resolve(`ดูเหมือนว่าฉันจะหาข้อมูลสภาพอากาศของ${location}ไม่เจอนะ`);
+                    agent.add(`ดูเหมือนว่าฉันไม่สามารถหาข้อมูลสภาพอากาศของ${location}ได้ อาจเป็นเพราะข้อมูลไม่เพียงพอ หรือมีข้อผิดพลาดในการเชื่อมต่อ API กรุณาลองใหม่อีกครั้งในภายหลัง`);
+                    return resolve(`ดูเหมือนว่าฉันไม่สามารถหาข้อมูลสภาพอากาศของ${location} ได้ อาจเป็นเพราะข้อมูลไม่เพียงพอ หรือมีข้อผิดพลาดในการเชื่อมต่อ API กรุณาลองใหม่อีกครั้งในภายหลัง`);
                 }
 
             }).catch(error => { console.error(error); return reject(error); });
@@ -123,20 +150,19 @@ app.post('/', (req, res) => {
 
     function askForProfHandler(agent) {
         const profName = agent.parameters.profName;
-        const askedTime = moment(agent.parameters.time.date_time);
-
-
+        const askedTime = moment(agent.parameters.time.date_time || agent.parameters.time)
 
         let location = null;
         let subject = null;
 
         const thaiDayDict = {
-            "Monday" : "วันจันทร์",
-            "Tuesday" : "วันอังคาร",
-            "Wednesday" : "วันพุธ",
-            "Thursday" : "วันพฤหัสบดี",
-            "Friday" : "วันศุกร์",
-            "Saturday" : "วันเสาร์",
+            "Monday": "วันจันทร์",
+            "Tuesday": "วันอังคาร",
+            "Wednesday": "วันพุธ",
+            "Thursday": "วันพฤหัสบดี",
+            "Friday": "วันศุกร์",
+            "Saturday": "วันเสาร์",
+            "Sunday": "วันอาทิตย์"
         };
 
         const profNameDict = {
@@ -146,25 +172,39 @@ app.post('/', (req, res) => {
             "โดม": "dome",
             "ศันสนีย์": "sansanee",
             "ชินวัตร": "chinawat",
-            "ภาสกร": "paskorn"
-            // have more //
+            "ภาสกร": "paskorn",
+            "ณัฐพล": "natthanan",
+            "ณาริศรา": "narissara",
+            "ยุทธพงษ์": "yuthapong",
+            "สันพวาส": "sanpawat",
+            "เกษมสิทธิ์": "kasemsit",
+            "ปทิเวศ": "patiwet",
+            "อัณณา": "anya",
+            "ศักดิ์กษิต": "sakgasit",
+            "กำพล": "kampol",
+            "พฤกษ์": "pruet",
+            "เมียว": "myo",
+            "อานันท์": "arnan",
+            "เกิดศักดิ์": "ken",
+            "ตรัสพงศ์": "trasapong"
+            // add more here
         };
 
         function checkInDict(name, dict) {
             if (dict[name]) {
                 return dict[name];
             } else {
-                return "data not found in dictionary";
+                return `data [${name}] not found in dictionary [${dict}]`;
             }
         }
 
         return new Promise((resolve, reject) => {
-            const stream = fs.createReadStream('./timetable.csv')
+            const stream = fs.createReadStream('./timetable_new.csv')
                 .pipe(csv());
 
             stream.on('data', (row) => {
                 const prof = row['Who'];
-                const startDate = moment(row['Start Date'], 'MM/DD/YYYY').format('dddd');
+                const startDate = moment(row['Start Date'], 'DD/MM/YYYY').format('dddd');
                 const startTime = moment(row['Start Time'], 'HH:mm A');
                 const endTime = moment(row['End Time'], 'HH:mm A');
 
@@ -172,23 +212,42 @@ app.post('/', (req, res) => {
                 const startTimeStr = startTime.format('HH:mm:ss');
                 const endTimeStr = endTime.format('HH:mm:ss');
 
-                const isProfMatch = prof === checkInDict(profName,profNameDict);
+                // Split the value of row['Who'] using comma as the separator and trim any whitespace
+                // For case like kasemsit,navadon as CSV result at prof
+                const professors = prof.split(',').map(name => name.trim());
+
+                // Check if profName matches any of the names in the professors array
+                const isProfMatch = professors.includes(checkInDict(profName, profNameDict));
                 const isDateInRange = startDate === askedTime.format('dddd');
                 const isTimeInRange = askedTimeStr >= startTimeStr && askedTimeStr <= endTimeStr;
+                // console.log(isProfMatch,isDateInRange,isTimeInRange)
 
                 if (isProfMatch && isDateInRange && isTimeInRange) {
                     location = row['Location'];
                     subject = row['Subject'];
+                    console.log("\t",profName, location, subject)
                 }
             });
 
             stream.on('end', () => {
+                let time = askedTime.format("HH:mm")
+                let day = checkInDict(askedTime.format('dddd'), thaiDayDict)
+                // Add the `location` parameter to the `resolve` function
                 if (location && subject) {
-                    agent.add(`เวลา ${askedTime.format("HH:mm")} ของ${checkInDict(askedTime.format('dddd'),thaiDayDict)}อาจารย์${profName}อยู่ที่ห้อง ${location} และกำลังสอนวิชา ${subject} อยู่ค่ะ`);
-                    resolve(`เวลา ${askedTime.format("HH:mm")} ของ${checkInDict(askedTime.format('dddd'),thaiDayDict)}อาจารย์${profName}อยู่ที่ห้อง ${location} และกำลังสอนวิชา ${subject} อยู่ค่ะ`);
+                    let text = `เวลา ${time} ของ${day}อาจารย์${profName}อยู่ที่ห้อง ${location} และกำลังสอนวิชา ${subject} อยู่ค่ะ`
+                    // make agent add the location parameter to context
+                    agent.context.set({
+                        name: 'askforprof-followup',
+                        lifespan: 2,
+                        parameters: {
+                            location: location
+                        }
+                    });
+                    agent.add(text);
+                    resolve(text);
                 } else {
-                    agent.add(`ไม่มีข้อมูลของอาจารย์${profName}ในเวลา ${askedTime.format("HH:mm")} ของ${checkInDict(askedTime.format('dddd'),thaiDayDict)}ค่ะ`);
-                    resolve(`ไม่มีข้อมูลของอาจารย์${profName}ในเวลา ${askedTime.format("HH:mm")} ของ${checkInDict(askedTime.format('dddd'),thaiDayDict)}ค่ะ`);
+                    agent.add(`ไม่มีข้อมูลของอาจารย์${profName}ในเวลา ${time} ของ${day}ค่ะ`);
+                    resolve(`ไม่มีข้อมูลของอาจารย์${profName}ในเวลา ${time} ของ${day}ค่ะ`);
                 }
             });
 
@@ -218,6 +277,8 @@ app.post('/', (req, res) => {
     intentMap.set('askForWeather - andAirQuality', askForAirQualityHandler);
     intentMap.set('askForProf', askForProfHandler);
     intentMap.set('askForProf - whereIsProfRoom', askWhereIsProfRoomHandler);
+    intentMap.set('askForProf - whereIsProfRoom - HowToGetThere', findLocationHandler);
+    intentMap.set('askForProf - HowToGetThere', findLocationHandler);
     agent.handleRequest(intentMap);
 });
 
