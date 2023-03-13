@@ -35,6 +35,51 @@ const apiKey = 'd5f48b6e1364b0d26d4fbdaadadc75a3';
 
 const db = admin.database();
 
+const thaiDayDict = {
+    "Monday": "วันจันทร์",
+    "Tuesday": "วันอังคาร",
+    "Wednesday": "วันพุธ",
+    "Thursday": "วันพฤหัสบดี",
+    "Friday": "วันศุกร์",
+    "Saturday": "วันเสาร์",
+    "Sunday": "วันอาทิตย์"
+};
+
+const profNameDict = {
+    "จักรพงศ์": "juggapong",
+    "ลัชนา": "lachana",
+    "กานต์": "karn",
+    "โดม": "dome",
+    "ศันสนีย์": "sansanee",
+    "ชินวัตร": "chinawat",
+    "ภาสกร": "paskorn",
+    "ณัฐนันท์": "natthanan",
+    "นริศรา": "narissara",
+    "ยุทธพงษ์": "yuthapong",
+    "สรรพวรรธน์": "sanpawat",
+    "เกษมสิทธิ์": "kasemsit",
+    "ปทิเวศ": "patiwet",
+    "อัณณา": "anya",
+    "ศักดิ์กษิต": "sakgasit",
+    "กำพล": "kampol",
+    "พฤษภ์": "pruet",
+    "เมียว": "myo",
+    "อานันท์": "arnan",
+    "Kenneth": "ken",
+    "ตรัสพงศ์": "trasapong",
+    "นวดนย์": "navadon",
+    "ธนาทิพย์": "thanatip",
+    // add more here
+};
+
+function checkInDict(name, dict) {
+    if (dict[name]) {
+        return dict[name];
+    } else {
+        return `data [${name}] not found in dictionary [${dict}]`;
+    }
+}
+
 app.post('/', (req, res) => {
     const agent = new WebhookClient({ request: req, response: res });
     // get sessions
@@ -42,8 +87,9 @@ app.post('/', (req, res) => {
 
     function findLocationHandler(agent) {
         const roomName = agent.parameters.locationName;
-        console.log("\t",roomName);
-        var ref = db.ref(`rooms/${roomName}`);
+        let room = roomName.replace(".", "_").trim();
+        console.log("\t", roomName);
+        var ref = db.ref(`rooms/${room}`);
         return ref.once("value", function (snapshot) {
             if (snapshot.val()) {
                 const payloadJson = {
@@ -53,7 +99,7 @@ app.post('/', (req, res) => {
                 agent.add(`ตามแผนที่ของ ${roomName} มาได้เลยค่ะ`);
                 agent.add(payload);
             } else {
-                agent.add(`เหมือนว่าจะไม่มีห้องนี้อยู่นะ`);
+                agent.add(`เหมือนว่าจะไม่มีห้องนี้อยู่ใน database ค่ะ`);
             }
         });
     }
@@ -97,7 +143,13 @@ app.post('/', (req, res) => {
                             result = `ดูเหมือนว่าฉันไม่สามารถหาข้อมูลสภาพอากาศของ${location}ได้ค่ะ อาจเป็นเพราะข้อมูลไม่เพียงพอ หรือมีข้อผิดพลาดในการเชื่อมต่อ API กรุณาลองใหม่อีกครั้งในภายหลังค่ะ`;
                             agent.add(result);
                         }
-                        if (temp_c >= 30) {
+                        if ((conditionCode >= 200 && conditionCode <= 232) ||   // พายุฝนฟ้าคะนอง
+                            (conditionCode >= 300 && conditionCode <= 321) ||   // ฝนตกเบาๆ
+                            (conditionCode >= 500 && conditionCode <= 531) ||   // ฝนตกหนัก
+                            conditionCode >= 701 && conditionCode <= 781        // อาการแปรปรวน
+                        ) {
+                            agent.add("ถ้าจะออกไปด้านนอกอย่าลืมพกร่มไปด้วยนะคะ");
+                        } else if (temp_c >= 30) {
                             agent.add("อุณหภูมิร้อนมาก เตรียมร่มเอาไปกันแดดด้วยก็ดีนะคะ");
                         } else if (temp_c >= 20) {
                             agent.add("อุณหภูมิเหมาะสมสำหรับกิจกรรมกลางวันมากค่ะ");
@@ -155,49 +207,6 @@ app.post('/', (req, res) => {
         let location = null;
         let subject = null;
 
-        const thaiDayDict = {
-            "Monday": "วันจันทร์",
-            "Tuesday": "วันอังคาร",
-            "Wednesday": "วันพุธ",
-            "Thursday": "วันพฤหัสบดี",
-            "Friday": "วันศุกร์",
-            "Saturday": "วันเสาร์",
-            "Sunday": "วันอาทิตย์"
-        };
-
-        const profNameDict = {
-            "จักรพงศ์": "juggapong",
-            "ลัชนา": "lachana",
-            "กานต์": "karn",
-            "โดม": "dome",
-            "ศันสนีย์": "sansanee",
-            "ชินวัตร": "chinawat",
-            "ภาสกร": "paskorn",
-            "ณัฐพล": "natthanan",
-            "ณาริศรา": "narissara",
-            "ยุทธพงษ์": "yuthapong",
-            "สันพวาส": "sanpawat",
-            "เกษมสิทธิ์": "kasemsit",
-            "ปทิเวศ": "patiwet",
-            "อัณณา": "anya",
-            "ศักดิ์กษิต": "sakgasit",
-            "กำพล": "kampol",
-            "พฤกษ์": "pruet",
-            "เมียว": "myo",
-            "อานันท์": "arnan",
-            "เกิดศักดิ์": "ken",
-            "ตรัสพงศ์": "trasapong"
-            // add more here
-        };
-
-        function checkInDict(name, dict) {
-            if (dict[name]) {
-                return dict[name];
-            } else {
-                return `data [${name}] not found in dictionary [${dict}]`;
-            }
-        }
-
         return new Promise((resolve, reject) => {
             const stream = fs.createReadStream('./timetable_new.csv')
                 .pipe(csv());
@@ -225,7 +234,7 @@ app.post('/', (req, res) => {
                 if (isProfMatch && isDateInRange && isTimeInRange) {
                     location = row['Location'];
                     subject = row['Subject'];
-                    console.log("\t",profName, location, subject)
+                    console.log("\t", profName, location, subject)
                 }
             });
 
@@ -238,7 +247,7 @@ app.post('/', (req, res) => {
                     // make agent add the location parameter to context
                     agent.context.set({
                         name: 'askforprof-followup',
-                        lifespan: 2,
+                        lifespan: 3,
                         parameters: {
                             location: location
                         }
@@ -260,16 +269,41 @@ app.post('/', (req, res) => {
 
     function askWhereIsProfRoomHandler(agent) {
         const profName = agent.parameters.profName;
-        var ref = db.ref(`prof/${profName}`);
-        return ref.once("value", function (snapshot) {
-            if (snapshot.val().room) {
-                agent.add(`${profName}อยู่ห้อง ${snapshot.val().room}`);
-            } else {
-                agent.add(`เหมือนว่าจะไม่มีอาจารย์นี้อยู่นะ`);
-            }
-        });
+        let room = null;
 
+        // Read the CSV file
+        
+        return new Promise((resolve, reject) => {
+            fs.createReadStream('./profName-room.csv')
+            .pipe(csv())
+            .on('data', (data) => {
+                if (checkInDict(profName, profNameDict) == data.ProfName) {
+                    room = data.Room;
+                }
+            })
+            .on('end', () => {
+                console.log("\t",profName,room);
+                if (room) {
+                    agent.context.set({
+                        name: 'askForProf-whereIsProfRoom-followup',
+                        lifespan: 3,
+                        parameters: {
+                            location: room
+                        }
+                    });
+                    agent.add(`อาจารย์${profName}อยู่ห้อง ${room}`);
+                    resolve(`อาจารย์${profName}อยู่ห้อง ${room}`);
+                } else {
+                    agent.add(`เหมือนว่าจะไม่มีห้องของอาจารย์${profName}นี้อยู่ใน database นะ`);
+                    reject(`เหมือนว่าจะไม่มีห้องของอาจารย์${profName}นี้อยู่ใน database นะ`);
+                }
+            })
+            .on('error', (error) => {
+                reject(error);
+            });
+        });
     }
+
 
     let intentMap = new Map();
     intentMap.set('askForRoomLocation', findLocationHandler);
