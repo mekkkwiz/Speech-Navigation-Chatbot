@@ -28,14 +28,22 @@
     "start": "node index.js",
     "backend": "nodemon index.js",
     "frontend": "npm run front --prefix client",
-    "dev": "concurrently --names \"SERVER,CLIENT\" -c \"bgBlue.bold,bgBlack.bold\" \"npm run backend\"  \"cd ./client_v2 && yarn dev\""
+    "dev": "concurrently --names \"SERVER,CLIENT,FULFILLMENT\" -c \"bgBlue.bold,bgBlack.bold,bgRed.bold\" \"npm run backend\"  \"cd ./client_v2 && yarn dev\" \"cd ./DFfullfillment && npm run dev\""
   },
   "keywords": [],
   "author": "MEK WISARUT",
   "license": "ISC",
-  "description": "",
+  "description": "The Building Access Navigation Program using Speech Interaction is a senior project for the Computer Engineering program. The program aims to create a system that enables users to navigate a building easily using voice commands and video navigation. In addition to this, the program can answer queries about the professor's location and the weather, providing users with additional information.",
   "devDependencies": {
     "concurrently": "^7.6.0",
     "nodemon": "^2.0.20"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mekkkwiz/final-project-app.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mekkkwiz/final-project-app/issues"
+  },
+  "homepage": "https://github.com/mekkkwiz/final-project-app#readme"
 }
