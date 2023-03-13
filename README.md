@@ -13,7 +13,7 @@ The program also features additional functionalities such as the ability to inqu
   - [Tech Stack](#tech-stack)
   - [Features](#features)
   - [Installation](#installation)
-    - [Alternatively, you can use Docker to run the program. Follow these steps to install using Docker](#alternatively-you-can-use-docker-to-run-the-program-follow-these-steps-to-install-using-docker)
+    - [Installation Using Docker](#alternatively-you-can-use-docker-to-run-the-program-follow-these-steps-to-install-using-docker)
   - [Usage](#usage)
   - [Credits](#credits)
 
