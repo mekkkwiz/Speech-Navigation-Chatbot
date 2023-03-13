@@ -4,6 +4,7 @@ import { Provider } from 'react-redux'
 import { configureStore } from '@reduxjs/toolkit'
 import Reducer from '../redux/_reducers';
 import ReduxThunk from 'redux-thunk';
+import 'regenerator-runtime/runtime'
 
 import { Noto_Sans_Thai_Looped } from '@next/font/google'
 

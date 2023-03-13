@@ -1,6 +1,6 @@
 "use client";
 
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import { Typography } from "antd";
 import { RobotOutlined } from "@ant-design/icons";
 import Chatbot from "./Chatbot/Chatbot.js";
@@ -8,24 +8,6 @@ import Head from "next/head";
 import WeatherCard from "./WeatherCard/WeatherCard.js";
 
 const { Title } = Typography;
-
-function Clock() {
-  const [time, setTime] = useState(new Date().toLocaleTimeString());
-
-  useEffect(() => {
-    const intervalID = setInterval(() => {
-      setTime(new Date().toLocaleTimeString());
-    }, 1000);
-    return () => clearInterval(intervalID);
-  }, []);
-
-  return (
-    <div>
-      <h2>Clock</h2>
-      <p>{time}</p>
-    </div>
-  );
-}
 
 function Weather() {
   const [weather, setWeather] = useState(null);
@@ -45,7 +27,6 @@ function Weather() {
         const data = await response.json();
         setWeather(data);
         setLoading(false);
-
       } catch (error) {
         setError(error as any);
         setLoading(false);
@@ -71,23 +52,43 @@ function Weather() {
 }
 
 export default function Home() {
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []);
+
   return (
-    <div>
+    <div className="max-w-screen mx-auto">
       <Head>
         <title>The Best Chatbot Ever!</title>
       </Head>
-      <div className="flex">
-        <div className="w-1/4 h-screen p-4 border-r-2">
+      <div className="flex flex-wrap">
+        {/* left side of homepage */}
+        <div className="w-full md:w-2/6 h-screen p-4 md:border-r-2">
           <div className="flex justify-center">
-            <Clock />
+            <Title level={3}>
+              <span
+                dangerouslySetInnerHTML={{
+                  __html: currentTime.toLocaleTimeString(),
+                }}
+              />
+            </Title>
           </div>
           <div className="flex justify-center mt-4">
-          <Weather />
+            <Weather />
           </div>
         </div>
-        <div className="w-3/4 p-4">
+        {/* right side of homepage */}
+        <div className="w-full md:w-4/6 p-4">
           <div className="flex justify-center">
-            <Title level={1}>
+            <Title className="text-xl md:text-3xl">
               CHAT BOT APP{" "}
               <RobotOutlined className="inline-block align-middle" />
             </Title>
@@ -99,4 +100,5 @@ export default function Home() {
       </div>
     </div>
   );
+
 }

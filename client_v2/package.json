@@ -27,6 +27,8 @@
     "react-player": "^2.11.0",
     "react-redux": "^8.0.5",
     "react-router-dom": "^6.6.2-pre.0",
+    "react-speech-recognition": "^3.10.0",
+    "regenerator-runtime": "^0.13.11",
     "typescript": "4.9.4",
     "web-audio-api": "^0.2.2"
   },
