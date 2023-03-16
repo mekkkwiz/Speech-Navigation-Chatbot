@@ -1,0 +1,28 @@
+.dimmed {
+  background-color: rgba(0, 0, 0, 0.2);
+  filter: brightness(80%);
+  transition: all 0.5s ease-out;
+  opacity: 0;
+}
+
+.dimmed.active {
+  opacity: 0.5;
+  filter: brightness(100%);
+}
+
+.dimmed.leave {
+  opacity: 0;
+  filter: brightness(100%);
+  transition: all 1s ease-out;
+}
+
+.listening {
+  position: absolute;
+  top: 50%;
+  left: 66%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+}

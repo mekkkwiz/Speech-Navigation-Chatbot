@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@google-cloud/dialogflow": "^5.4.0",
+    "@google-cloud/storage": "^6.9.4",
     "@next/font": "^13.2.3",
     "body-parser": "^1.20.1",
     "concurrently": "^7.6.0",
@@ -28,7 +29,7 @@
     "start": "node index.js",
     "backend": "nodemon index.js",
     "frontend": "npm run front --prefix client",
-    "dev": "concurrently --names \"SERVER,CLIENT,FULFILLMENT\" -c \"bgBlue.bold,bgBlack.bold,bgRed.bold\" \"npm run backend\"  \"cd ./client_v2 && yarn dev\" \"cd ./DFfullfillment && npm run dev\""
+    "dev": "concurrently --names \"SERVER,CLIENT,FULFILLMENT\" -c \"bgBlue.bold,bgBlack.bold,bgRed.bold\" \"npm run backend\"  \"cd ./client_v2 && yarn dev\""
   },
   "keywords": [],
   "author": "MEK WISARUT",

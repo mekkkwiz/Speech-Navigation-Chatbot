@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { GetServerSideProps } from 'next';
 import { Typography } from "antd";
 import { RobotOutlined } from "@ant-design/icons";
 import Chatbot from "./Chatbot/Chatbot.js";
@@ -51,12 +52,27 @@ function Weather() {
   return <WeatherCard weather={weather} />;
 }
 
-export default function Home() {
-  const [currentTime, setCurrentTime] = useState(new Date());
+
+
+type Props = {
+  currentTime: string;
+};
+
+export const getServerSideProps: GetServerSideProps<Props> = async (): Promise<{props: Props}> => {
+  return {
+    props: {
+      currentTime: new Date().toLocaleTimeString(),
+    },
+  };
+};
+
+
+export default function Home({ currentTime }: Props) {
+  const [currentTimeState, setCurrentTimeState] = useState(currentTime);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      setCurrentTime(new Date());
+      setCurrentTimeState(new Date().toLocaleTimeString());
     }, 1000);
 
     return () => {
@@ -73,13 +89,7 @@ export default function Home() {
         {/* left side of homepage */}
         <div className="w-full md:w-2/6 h-screen p-4 md:border-r-2">
           <div className="flex justify-center">
-            <Title level={3}>
-              <span
-                dangerouslySetInnerHTML={{
-                  __html: currentTime.toLocaleTimeString(),
-                }}
-              />
-            </Title>
+          <Title level={3}>{currentTimeState}</Title>
           </div>
           <div className="flex justify-center mt-4">
             <Weather />
