@@ -98,7 +98,7 @@ The program also features additional functionalities such as the ability to inqu
 ## Usage
 
 1. Open the program in your browser at <http://localhost:3000>.
-2. Allow access to your microphone and camera.
+2. Allow access to your microphone.
 3. Use speech commands to navigate the building, inquire about the professor's location, or ask about the weather.
 4. The program will respond with audio via the Google TTS API.
 
@@ -110,3 +110,4 @@ The program also features additional functionalities such as the ability to inqu
 - Google TTS API: <https://cloud.google.com/text-to-speech>
 - Dialogflow: <https://cloud.google.com/dialogflow/>
 - Weather API: <https://openweathermap.org/api>
+- AirQuality API: [https://www.iqair.com/](https://www.iqair.com/th-en/air-pollution-data-api)
