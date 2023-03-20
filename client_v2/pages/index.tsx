@@ -4,55 +4,12 @@ import React, { useEffect, useState } from "react";
 import { GetServerSideProps } from 'next';
 import { Typography } from "antd";
 import { RobotOutlined } from "@ant-design/icons";
-import Chatbot from "./Chatbot/Chatbot.js";
+import Chatbot from "./Chatbot/Chatbot";
 import Head from "next/head";
-import WeatherCard from "./WeatherCard/WeatherCard.js";
+import WeatherCard from "./WeatherCard/WeatherCard";
+import PollutionReportCard from "./PollutionReportCard/PollutionReportCard";
 
 const { Title } = Typography;
-
-function Weather() {
-  const [weather, setWeather] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const API_KEY = "d5f48b6e1364b0d26d4fbdaadadc75a3";
-    const CITY_NAME = "เชียงใหม่";
-
-    async function fetchWeather() {
-      try {
-        setLoading(true);
-        const response = await fetch(
-          `https://api.openweathermap.org/data/2.5/weather?q=${CITY_NAME}&appid=${API_KEY}&units=metric`
-        );
-        const data = await response.json();
-        setWeather(data);
-        setLoading(false);
-      } catch (error) {
-        setError(error as any);
-        setLoading(false);
-      }
-    }
-
-    fetchWeather();
-  }, []);
-
-  if (loading) {
-    return <p>Loading weather data...</p>;
-  }
-
-  if (error) {
-    return <p>Error fetching weather data: {error}</p>;
-  }
-
-  if (!weather) {
-    return null;
-  }
-
-  return <WeatherCard weather={weather} />;
-}
-
-
 
 type Props = {
   currentTime: string;
@@ -67,8 +24,10 @@ export const getServerSideProps: GetServerSideProps<Props> = async (): Promise<{
 };
 
 
-export default function Home({ currentTime }: Props) {
+function Home({ currentTime }: Props) {
   const [currentTimeState, setCurrentTimeState] = useState(currentTime);
+  const [latitude, setLatitude] = useState(0);
+  const [longitude, setLongitude] = useState(0);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -80,6 +39,18 @@ export default function Home({ currentTime }: Props) {
     };
   }, []);
 
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLatitude(position.coords.latitude);
+        setLongitude(position.coords.longitude);
+      },
+      (error) => {
+        console.error(error);
+      }
+    );
+  }, []);
+
   return (
     <div className="max-w-screen mx-auto">
       <Head>
@@ -89,10 +60,13 @@ export default function Home({ currentTime }: Props) {
         {/* left side of homepage */}
         <div className="w-full md:w-2/6 h-screen p-4 md:border-r-2">
           <div className="flex justify-center">
-          <Title level={3}>{currentTimeState}</Title>
+            <Title >{currentTimeState}</Title>
           </div>
           <div className="flex justify-center mt-4">
-            <Weather />
+            <WeatherCard latitude={latitude} longitude={longitude} />
+          </div>
+          <div className="flex justify-center">
+            <PollutionReportCard latitude={latitude} longitude={longitude} />
           </div>
         </div>
         {/* right side of homepage */}
@@ -103,12 +77,13 @@ export default function Home({ currentTime }: Props) {
               <RobotOutlined className="inline-block align-middle" />
             </Title>
           </div>
-          <div className="flex justify-center">
+          <div className="flex justify-center mt-4">
             <Chatbot />
           </div>
         </div>
       </div>
     </div>
   );
-
 }
+
+export default Home;
