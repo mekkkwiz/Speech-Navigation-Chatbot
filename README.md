@@ -13,7 +13,7 @@ The program also features additional functionalities such as the ability to inqu
   - [Tech Stack](#tech-stack)
   - [Features](#features)
   - [Installation](#installation)
-    - [Installation Using Docker](#alternatively-you-can-use-docker-to-run-the-program-follow-these-steps-to-install-using-docker)
+    - [Alternatively, you can use Docker to run the program. Follow these steps to install using Docker](#alternatively-you-can-use-docker-to-run-the-program-follow-these-steps-to-install-using-docker)
   - [Usage](#usage)
   - [Credits](#credits)
 
@@ -48,6 +48,9 @@ The program also features additional functionalities such as the ability to inqu
 
     cd client_v2
     npm install
+
+    cd DfFulfillment
+    npm install
     ```
 
 3. ### Create a .env file with the following variables
@@ -60,11 +63,27 @@ The program also features additional functionalities such as the ability to inqu
     GOOGLE_PRIVATE_KEY="your-private-key"
     ```
 
+    and download your service account key from the Google Cloud Platform and save it as `serviceAccountKey.json` in the DFfullfillment directory of the project.
+
 4. ### Start the server
 
     ```bash
     npm run dev
     ```
+
+    and run fulfillment server in DfFulfillment directory
+
+    ```bash
+    npm run dev
+    ```
+
+    you may need to put localhost of fulfillment server on the internet by using ngrok that you can download from <https://ngrok.com/download>
+
+    ```bash
+    ngrok http 3030
+    ```
+
+    then copy the https url and put it on the fulfillment server on the Dialogflow
 
 ### Alternatively, you can use Docker to run the program. Follow these steps to install using Docker
 
@@ -90,10 +109,10 @@ The program also features additional functionalities such as the ability to inqu
 5. Run the Docker image:
 
     ```bash
-    docker run -p 3000:3000 -p 5000:5000 building-access-navigation
+    docker run -p 3000:3000 -p 5000:5000 -p 3030:3030 building-access-navigation
     ```
 
-6. Open the program in your browser at <http://localhost:3000>.
+6. then do step 3 and 4 in the manual installation section
 
 ## Usage
 

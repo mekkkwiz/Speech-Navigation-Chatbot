@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import styles from "../../../styles/Chatbot.module.css";
 
 declare global {
@@ -16,21 +16,7 @@ const useSpeechRecognition = (
   const [isListening, setIsListening] = useState<boolean>(false);
   const recognitionRef = useRef<any>(null);
 
-  useEffect(() => {
-    const recognition = new window.webkitSpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = "th-TH";
-    recognitionRef.current = recognition;
-
-    recognition.addEventListener("result", handleSpeechResult);
-
-    return () => {
-      recognition.removeEventListener("result", handleSpeechResult);
-    };
-  }, []);
-
-  const handleSpeechResult = (event: any) => {
+  const handleSpeechResult = useCallback((event: any) => {
     const transcript = Array.from(event.results)
       .map((result: any) => result[0].transcript)
       .join("");
@@ -47,7 +33,22 @@ const useSpeechRecognition = (
         setIsListening(false);
       }
     }, 1200);
-  };
+  }, [messageContainerRef, setTranscript]);
+
+  useEffect(() => {
+    const recognition = new window.webkitSpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = "th-TH";
+    recognitionRef.current = recognition;
+
+    recognition.addEventListener("result", handleSpeechResult);
+
+    return () => {
+      recognition.removeEventListener("result", handleSpeechResult);
+    };
+  }, [handleSpeechResult]);
+
 
   const toggleListening = () => {
     if (isListening) {

@@ -26,8 +26,6 @@ export const getServerSideProps: GetServerSideProps<Props> = async (): Promise<{
 
 function Home({ currentTime }: Props) {
   const [currentTimeState, setCurrentTimeState] = useState(currentTime);
-  const [latitude, setLatitude] = useState(0);
-  const [longitude, setLongitude] = useState(0);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -39,17 +37,11 @@ function Home({ currentTime }: Props) {
     };
   }, []);
 
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setLatitude(position.coords.latitude);
-        setLongitude(position.coords.longitude);
-      },
-      (error) => {
-        console.error(error);
-      }
-    );
-  }, []);
+  // Chiang Mai, Thailand
+  const geolocation = {
+    latitude: 18.7883,
+    longitude: 98.9867,
+  };
 
   return (
     <div className="max-w-screen mx-auto">
@@ -63,17 +55,17 @@ function Home({ currentTime }: Props) {
             <Title >{currentTimeState}</Title>
           </div>
           <div className="flex justify-center mt-4">
-            <WeatherCard latitude={latitude} longitude={longitude} />
+            <WeatherCard latitude={geolocation.latitude} longitude={geolocation.longitude} />
           </div>
           <div className="flex justify-center">
-            <PollutionReportCard latitude={latitude} longitude={longitude} />
+            <PollutionReportCard latitude={geolocation.latitude} longitude={geolocation.longitude} />
           </div>
         </div>
         {/* right side of homepage */}
         <div className="w-full md:w-4/6 p-4">
           <div className="flex justify-center">
             <Title className="text-xl md:text-3xl">
-              CHAT BOT APP{" "}
+              Building Access Navigation Program{" "}
               <RobotOutlined className="inline-block align-middle" />
             </Title>
           </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { saveMessage } from "../../redux/_actions/message_actions";
@@ -48,7 +48,7 @@ function Chatbot() {
     setTranscript(event.target.value);
   };
 
-  const textQuery = async (text: string) => {
+  const textQuery = useCallback(async (text: string) => {
     let conversation: Conversation = {
       who: "user",
       content: {
@@ -94,18 +94,25 @@ function Chatbot() {
       };
       dispatch(saveMessage(conversation));
     }
-  };
+  }, [dispatch]);
 
-  const keyPressHandler = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const keyPressHandler = useCallback((e: KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      if (!e.currentTarget.value) {
+      if (!transcript) {
         return alert("คุณต้องพิมพ์บางอย่างก่อนที่จะส่งข้อความ");
       }
       setTranscript("");
-      textQuery(e.currentTarget.value);
+      textQuery(transcript);
     }
-  };
+  }, [textQuery, transcript]);
+
+  useEffect(() => {
+    window.addEventListener("keypress", keyPressHandler);
+    return () => {
+      window.removeEventListener("keypress", keyPressHandler);
+    };
+  }, [keyPressHandler]);
 
   const renderMessages = (returnedMessages: Conversation[]) => {
     if (returnedMessages) {
@@ -199,6 +206,12 @@ function Chatbot() {
     }
   }, [transcript]);
 
+  useEffect(() => {
+    if (!isListening) {
+      textareaRef.current?.focus();
+    }
+  }, [isListening]);
+
   return (
     <div className="h-[80vh] w-full border rounded-[7px] border-black flex flex-col justify-between">
       {isListening && <div className={styles.listening}> listening...</div>}
@@ -213,7 +226,6 @@ function Chatbot() {
         <textarea
           ref={textareaRef}
           className="m-0 flex-1 rounded-[4px] text-base outline-none auto-h p-2"
-          onKeyPress={keyPressHandler}
           value={transcript}
           onChange={handleInputChange}
           rows={1}
