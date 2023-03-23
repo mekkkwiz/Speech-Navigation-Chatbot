@@ -1,9 +1,30 @@
-version: '3'
+version: "3.9"
 
 services:
-  app:
-    image: docker-nextjs
-    build: .
+  client:
+    build:
+      context: ./client_v2
+      dockerfile: Dockerfile.client
     ports:
-      - 3000:3000
-      - 5000:5000
+      - "3000:3000"
+    networks:
+      - app-network
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    ports:
+      - "5000:5000"
+    networks:
+      - app-network
+  fulfillment:
+    build:
+      context: ./fulfillmentService
+      dockerfile: Dockerfile.fulfillment
+    ports:
+      - "3030:3030"
+    networks:
+      - app-network
+
+networks:
+  app-network:

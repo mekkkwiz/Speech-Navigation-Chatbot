@@ -1,0 +1,15 @@
+FROM node:16-alpine
+
+WORKDIR /app
+
+COPY package.json yarn.lock ./
+COPY server ./server
+COPY index.js ./index.js
+COPY .env ./.env
+
+RUN npm install
+
+CMD ["npm", "run", "backend"]
+
+EXPOSE 5000
+
