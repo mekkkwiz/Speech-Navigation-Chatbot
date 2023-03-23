@@ -7,3 +7,5 @@ node_modules
 /DFfullfillment/serviceAccountKey.json
 /Google_Cloud_Function/service-account.json
 .env
+
+.VSCodeCounter

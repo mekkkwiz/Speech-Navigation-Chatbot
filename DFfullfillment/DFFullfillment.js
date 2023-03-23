@@ -8,7 +8,6 @@ const { Storage } = require('@google-cloud/storage');
 // const fs = require('fs');
 const csv = require('csv-parser');
 const moment = require('moment');
-const qrcode = require('qrcode');
 const serviceAccount = require("./serviceAccountKey.json");
 
 const app = express();
@@ -57,7 +56,7 @@ const profNameDict = {
   "สรรพวรรธน์": "sanpawat",
   "เกษมสิทธิ์": "kasemsit",
   "ปทิเวศ": "patiwet",
-  "อัณณา": "anya",
+  "อัญญา": "anya",
   "ศักดิ์กษิต": "sakgasit",
   "กำพล": "kampol",
   "พฤษภ์": "pruet",
@@ -69,6 +68,9 @@ const profNameDict = {
   "ธนาทิพย์": "thanatip",
   // add more here
 };
+
+const CURRENT_FLOOR = 5;
+const ANOTHER_FLOOR = 4;
 
 function checkInDict(name, dict) {
   if (dict[name]) {
@@ -83,14 +85,20 @@ app.post('/', (req, res) => {
   // get sessions
   console.log('Dialogflow Request intent: ' + agent.intent);
 
-  function findLocationHandler(agent) {
+  async function findLocationHandler(agent) {
     let roomName = agent.parameters.locationName;
-    console.log(roomName);
     let room = roomName.includes(".") ? roomName.replace(".", "_").trim() : roomName.trim();
-    console.log("\t", room, roomName.includes("."));
-    var ref = db.ref(`rooms/${room}`);
-    return ref.once("value")
-      .then(function(snapshot) {
+
+    // Check if the room is on the CURRENT_FLOOR or is a toilet
+    if (room == "ห้องน้ำ") {
+      room = `${CURRENT_FLOOR}_toilet`;
+    }
+    console.log("\t", room, room.startsWith(`${CURRENT_FLOOR}`) || room == "ห้องน้ำ");
+
+    if (room.startsWith(`${CURRENT_FLOOR}`) || room == "ห้องน้ำ") {
+      var ref = db.ref(`rooms/${room}`);
+      try {
+        const snapshot = await ref.once("value");
         if (snapshot.val()) {
           const payloadJson = {
             video_url: snapshot.val().video_url,
@@ -102,12 +110,28 @@ app.post('/', (req, res) => {
         } else {
           agent.add(`เหมือนว่าจะไม่มีห้องนี้อยู่ใน database ค่ะ`);
         }
-      })
-      .catch(function(error) {
+      } catch (error) {
         console.error(error);
         agent.add(`มีข้อผิดพลาดเกี่ยวกับการเชื่อมต่อกับฐานข้อมูล`);
-      });
+      }
+    } else {
+      // Check if the room exists in ANOTHER_FLOOR
+      ref = db.ref(`rooms/${room}`);
+      try {
+        const snapshot_1 = await ref.once("value");
+        if (snapshot_1.val()) {
+          agent.add(`เหมือนว่าห้องนี้อยู่ที่ชั้น ${ANOTHER_FLOOR} ค่ะ ลองไปที่ชั้น ${ANOTHER_FLOOR} และถามเพื่อนของฉันที่อยู่ที่นั่นให้หาห้องนี้ให้นะคะ`);
+        } else {
+          agent.add(`เหมือนว่าจะไม่มีห้องนี้อยู่ใน database ค่ะ`);
+        }
+      } catch (error_1) {
+        console.error(error_1);
+        agent.add(`มีข้อผิดพลาดเกี่ยวกับการเชื่อมต่อกับฐานข้อมูล`);
+      }
+    }
   }
+
+
 
 
   function askForWeatherHandler(agent) {
@@ -214,6 +238,8 @@ app.post('/', (req, res) => {
     const profName = agent.parameters.profName;
     const askedTime = moment(agent.parameters.time.date_time || agent.parameters.time)
 
+    console.log(`Asked for prof ${profName} at ${agent.parameters.time.date_time || agent.parameters.tim}`);
+
     let location = null;
     let subject = null;
 
@@ -235,7 +261,12 @@ app.post('/', (req, res) => {
           const professors = prof.split(',').map((name) => name.trim());
 
           // Check if profName matches any of the names in the professors array
-          const isProfMatch = professors.includes(checkInDict(profName, profNameDict));
+          const isProfMatch = professors.reduce((acc, curr) => {
+            // If the accumulator is already true, keep it true
+            if (acc) return acc;
+            // Check if the current name matches profName using checkInDict
+            return checkInDict(profName, profNameDict) === curr;
+          }, false);
           const isDateInRange = startDate === askedTime.format('dddd');
           const isTimeInRange = askedTimeStr >= startTimeStr && askedTimeStr <= endTimeStr;
           // console.log(isProfMatch,isDateInRange,isTimeInRange)
@@ -316,22 +347,25 @@ app.post('/', (req, res) => {
     const location = agent.parameters.location;
     let roomName = location.replace(".", "_").trim();
 
-    let videoUrl = null;
+    let videoUrl = '';
     const config = {
       action: 'read',
       expires: Date.now() + 1000 * 60 * 5, // 5 minutes
     };
 
+    let videoFound = false;
+
     try {
       const [files] = await bucket.getFiles({
-        directory: `rooms/${roomName}`,
+        prefix: `rooms/${roomName}/`,
         autoPaginate: false,
       });
 
       for (const file of files) {
         const [metadata] = await file.getMetadata();
         if (metadata.contentType.includes('video')) {
-          videoUrl = await file.getSignedUrl(config);
+          videoUrl = (await file.getSignedUrl(config))[0];
+          videoFound = true;
           break;
         }
       }
@@ -339,26 +373,55 @@ app.post('/', (req, res) => {
       console.error(err);
     }
 
-    if (!videoUrl) {
+    if (!videoFound) {
       agent.add(`ขอโทษค่ะ ไม่พบวิดีโอสำหรับห้อง ${location}`);
       return;
     }
 
-    return qrcode.toDataURL(videoUrl)
-      .then(dataUrl => {
+    // Function to shorten the URL using Bitly's API
+    async function shortenUrl(longUrl) {
+      const CUTTLY_API_URL = 'https://cutt.ly/api/api.php';
+      const CUTTLY_API_KEY = '8006027b49dbbc9c260cd4cb04113b99141b2'; // Replace with your Cutt.ly API key
+
+      try {
+        const response = await axios.get(CUTTLY_API_URL, {
+          params: {
+            key: CUTTLY_API_KEY,
+            short: longUrl
+          }
+        })
+        console.log(response.data)
+
+        if (response.data.url.status === 7) {
+          return response.data.url.shortLink;
+        } else {
+          console.error('Error shortening the URL, status:', response.data.url.status);
+          return longUrl; // Return the original URL if shortening fails
+        }
+      } catch (error) {
+        console.error('Error shortening the URL:', error);
+        return longUrl; // Return the original URL if shortening fails
+      }
+    }
+
+    return shortenUrl(videoUrl)
+      .then((shortVideoUrl) => {
         const payloadJson = {
-          imageUrl: dataUrl
+          videoUrl: shortVideoUrl, // Add the shortVideoUrl to the payload
         };
-        let payload = new Payload('QR_CODE', payloadJson, { rawPayload: true, sendAsMessage: true });
+        let payload = new Payload('VIDEO_URL', payloadJson, { rawPayload: true, sendAsMessage: true });
         roomName = location.replace("ห้อง", "").trim();
-        agent.add(`นี่คือ QR Code สำหรับวิดีโอของห้อง${roomName} QR Code นี้มีอายุการใช้งาน 5 นาทีนะคะ`);
+        agent.add(`นี่คือ URL สำหรับวิดีโอของห้อง${roomName} URL นี้มีอายุการใช้งาน 5 นาทีนะคะ`);
         agent.add(payload);
       })
-      .catch(err => {
-        console.error(err);
-        agent.add(`ขอโทษค่ะ ไม่สามารถสร้าง QR Code ได้ในขณะนี้`);
+      .catch((error) => {
+        console.error('Error shortening the URL:', error);
+        agent.add('ไม่สามารถสร้าง URL สำหรับวิดีโอได้');
       });
   }
+
+
+
 
 
 

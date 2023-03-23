@@ -2,6 +2,12 @@ import React, { useState, useEffect } from "react";
 import { Card, Statistic } from "antd";
 import { EnvironmentOutlined } from "@ant-design/icons";
 import memoize from "lodash.memoize";
+import { Sarabun } from "@next/font/google";
+
+const font = Sarabun({
+  subsets: ["thai", "latin"],
+  weight: "400",
+});
 
 type Props = {
   latitude: number;
@@ -101,16 +107,16 @@ function PollutionReportCard({ latitude, longitude }: Props) {
   return (
     <Card
       title={
-        <div className="flex items-center">
+        <div className="flex items-center" style={{ fontFamily: font.style.fontFamily }}>
           <EnvironmentOutlined className="text-lg mr-2" />
           <span>{city == "Chiang Mai" ? "เชียงใหม่" : city}</span>
         </div>
       }
       className="my-4 w-full border-black"
     >
-      <div className="flex justify-between">
+      <div className="flex justify-between" style={{ fontFamily: font.style.fontFamily }}>
         <div>
-          <Statistic title="ดัชนีคุณภาพอากาศ" value={aqius} />
+          <Statistic title="ดัชนีคุณภาพอากาศ" value={aqius} style={{ fontFamily: font.style.fontFamily }}/>
           <div className="text-xs mt-1">
             <span
               className={`inline-block px-2 py-1 rounded-md text-white font-medium ${

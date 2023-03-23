@@ -12,8 +12,14 @@ import {
 } from "@ant-design/icons";
 import styles from "../../styles/Chatbot.module.css";
 import useSpeechRecognition from "./hooks/useSpeechRecognition";
-import useScrollToBottom from "./hooks/useScrollToBottom";
 import useAutoResizeTextarea from "./hooks/useAutoResizeTextarea";
+import QRCode from "qrcode.react"
+import { Sarabun } from "@next/font/google";
+
+const font = Sarabun({
+  subsets: ["thai", "latin"],
+  weight: "400",
+});
 
 interface RootState {
   messages: {
@@ -35,13 +41,20 @@ function Chatbot() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { isListening, toggleListening } =
-    useSpeechRecognition(setTranscript, messageContainerRef);
-  const scrollToBottom = useScrollToBottom(messages);
+  useSpeechRecognition(setTranscript, messageContainerRef);
   useAutoResizeTextarea(transcript, textareaRef);
 
+  const scrollToBottom = () => {
+    if (messageContainerRef.current) {
+      messageContainerRef.current.scrollTo({
+        top: messageContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  };
+  
   useEffect(() => {
     scrollToBottom();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages]);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -78,10 +91,10 @@ function Chatbot() {
           content: content,
         };
         dispatch(saveMessage(conversation));
-        if (audioRes) {
-          let audio = new Audio("data:audio/wav;base64," + audioRes);
-          audio.play();
-        }
+      }
+      if (audioRes) {
+        let audio = new Audio("data:audio/wav;base64," + audioRes);
+        audio.play();
       }
     } catch (error) {
       conversation = {
@@ -103,9 +116,14 @@ function Chatbot() {
         return alert("คุณต้องพิมพ์บางอย่างก่อนที่จะส่งข้อความ");
       }
       setTranscript("");
-      textQuery(transcript);
+      textQuery(transcript.trim());
+    } else if (e.key === " ") { // Added condition for spacebar key
+      if (!transcript) {
+        e.preventDefault(); // Prevent scrolling on spacebar press
+        toggleListening(); // Call toggleListening() function directly
+      }
     }
-  }, [textQuery, transcript]);
+  }, [textQuery, transcript, toggleListening]);
 
   useEffect(() => {
     window.addEventListener("keypress", keyPressHandler);
@@ -118,6 +136,9 @@ function Chatbot() {
     if (returnedMessages) {
       return (
         <List
+          split = {true}
+          bordered
+          grid={{ gutter: 8, column: 1 }}
           dataSource={returnedMessages}
           renderItem={(message, i) => {
             if (
@@ -162,7 +183,7 @@ function Chatbot() {
               );
             } else if (
               message.content &&
-              message.content.payload.fields.imageUrl
+              message.content.payload.fields.videoUrl
             ) {
               const AvatarSrc =
                 message.who === "bot" ? (
@@ -170,20 +191,18 @@ function Chatbot() {
                 ) : (
                   <SmileOutlined className="inline-block align-middle text-black text-xl" />
                 );
+              const qrCodeUrl = message.content.payload.fields.videoUrl.stringValue;
               return (
                 <List.Item style={{ padding: "1rem" }}>
                   <List.Item.Meta
                     avatar={<Avatar icon={AvatarSrc} />}
                     title={message.who}
                     description={
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={
-                          message.content.payload.fields.imageUrl.stringValue
-                        }
-                        alt="QR code"
-                        width={400}
-                        height={400}
+                      <QRCode
+                        value={qrCodeUrl}
+                        size={400}
+                        level="H"
+                        includeMargin={true}
                       />
                     }
                   />
@@ -213,8 +232,8 @@ function Chatbot() {
   }, [isListening]);
 
   return (
-    <div className="h-[80vh] w-full border rounded-[7px] border-black flex flex-col justify-between">
-      {isListening && <div className={styles.listening}> listening...</div>}
+    <div className="h-[85vh] w-full border rounded-[7px] border-black flex flex-col justify-between">
+      {isListening && <div className={styles.listening} style={{ fontFamily: font.style.fontFamily }}> listening...</div>}
       <div
         className={`h-[calc(80vh - 50px)] w-full overflow-auto p-2 md:p-4`}
         ref={messageContainerRef}
@@ -224,6 +243,7 @@ function Chatbot() {
       </div>
       <div className="flex items-center bg-gray-100 rounded-[4px] p-[5px]">
         <textarea
+          style={{ fontFamily: font.style.fontFamily }}
           ref={textareaRef}
           className="m-0 flex-1 rounded-[4px] text-base outline-none auto-h p-2"
           value={transcript}
@@ -232,6 +252,7 @@ function Chatbot() {
           placeholder="คุณสามารถพิมพ์ข้อความที่นี่หรือกดไอคอนไมค์เพื่อพูด..."
         />
         <button
+          style={{ fontFamily: font.style.fontFamily }}
           className="bg-gray-200 rounded-[4px] p-[5px] ml-[5px] w-10 py-2"
           onClick={toggleListening}
         >

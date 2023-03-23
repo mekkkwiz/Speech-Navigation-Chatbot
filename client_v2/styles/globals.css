@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+@font-face {
+    font-family: 'Sarabun';
+    src: url('https://fonts.googleapis.com/css2?family=Sarabun&display=swap');
+}
