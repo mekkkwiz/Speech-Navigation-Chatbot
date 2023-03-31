@@ -7,8 +7,10 @@ const router = express.Router();
 const config = require('../config/keys');
 
 const projectId = config.googleProjectID
+const client_email = config.googleClientEmail
 const sessionId = config.dialogFlowSessionID
 const languageCode = config.dialogFlowSessionLanguageCode
+const private_key = config.googlePrivateKey
 
 
 // Create a new session
@@ -16,7 +18,15 @@ const languageCode = config.dialogFlowSessionLanguageCode
 // const options = {
 //     apiEndpoint: "australia-southeast1-dialogflow.googleapis.com"
 // }
-const sessionClient = new dialogflow.SessionsClient();
+
+const sessionClient = new dialogflow.SessionsClient({
+    credentials: {
+        client_email: client_email,
+        private_key: private_key
+    },
+    projectId: projectId,
+    apiEndpoint: 'dialogflow.googleapis.com'
+});
 // const sessionPath = `projects/${projectId}/locations/australia-southeast1/agent/sessions/${sessionId}` // for non-US regions data center
 const sessionPath = sessionClient.projectAgentSessionPath( // for US regions data center (default)
     projectId,

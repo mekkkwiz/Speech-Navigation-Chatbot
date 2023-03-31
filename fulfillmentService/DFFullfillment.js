@@ -27,7 +27,12 @@ const openWeatherApiKey = 'd5f48b6e1364b0d26d4fbdaadadc75a3';
 
 const db = admin.database();
 
-const storage = new Storage();
+const credentials = {
+  client_email: serviceAccount.client_email,
+  private_key: serviceAccount.private_key
+};
+
+const storage = new Storage({ credentials });
 const bucket = storage.bucket("chat-bot-project-tr9v.appspot.com");
 const csv_timetable_new = bucket.file("data/timetable_new.csv");
 const csv_profName_room = bucket.file("data/profName-room.csv");
@@ -55,7 +60,7 @@ const profNameDict = {
   "ยุทธพงษ์": "yuthapong",
   "สรรพวรรธน์": "sanpawat",
   "เกษมสิทธิ์": "kasemsit",
-  "ปทิเวศ": "patiwet",
+  "ปฏิเวธ": "patiwet",
   "อัญญา": "anya",
   "ศักดิ์กษิต": "sakgasit",
   "กำพล": "kampol",
@@ -419,15 +424,6 @@ app.post('/', (req, res) => {
         agent.add('ไม่สามารถสร้าง URL สำหรับวิดีโอได้');
       });
   }
-
-
-
-
-
-
-
-
-
 
   let intentMap = new Map();
   intentMap.set('askForRoomLocation', findLocationHandler);

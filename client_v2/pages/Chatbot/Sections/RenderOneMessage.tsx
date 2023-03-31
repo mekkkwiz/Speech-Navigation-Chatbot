@@ -7,6 +7,7 @@ const font = Sarabun({
   subsets: ["thai", "latin"],
   weight: "400",
 });
+
 type MyPros = {
     who: 'bot' | 'user',
     text: string

@@ -114,4 +114,4 @@ def upload_videos(local_dir_path, storage_dir_name):
 
 if __name__ == "__main__":
     # Example usage:
-    upload_videos("../../VIDEO/video", "testBot")
+    upload_videos("../../VIDEO/video", "rooms")
